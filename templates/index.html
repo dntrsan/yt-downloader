@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YT-Downloader</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #f5f0e8;
+            --bg-secondary: #ece5d5;
+            --bg-card: #faf7f0;
+            --text-primary: #2c2416;
+            --text-secondary: #6b5d4d;
+            --accent: #8b2525;
+            --accent-light: #c45c5c;
+            --accent-dark: #5e1414;
+            --border: #d4c9b5;
+            --border-light: #e8dece;
+            --success: #4a7c59;
+            --error: #8b2525;
+            --gold: #b8960c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Decorative pattern background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(139, 37, 37, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(184, 150, 12, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(74, 124, 89, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 40px 0 30px;
+        }
+
+        .site-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            position: relative;
+            display: inline-block;
+        }
+
+        .site-title::before,
+        .site-title::after {
+            content: '〇';
+            font-size: 0.5em;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gold);
+            opacity: 0.5;
+        }
+
+        .site-title::before {
+            left: -2em;
+        }
+
+        .site-title::after {
+            right: -2em;
+        }
+
+        .site-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            letter-spacing: 0.2em;
+        }
+
+        .divider {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            margin: 20px auto;
+        }
+
+        /* Main Card */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 32px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(44, 36, 22, 0.06);
+        }
+
+        .card-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-light);
+            letter-spacing: 0.1em;
+        }
+
+        /* URL Input */
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #fff;
+            color: var(--text-primary);
+            transition: border-color 0.3s, box-shadow 0.3s;
+            outline: none;
+        }
+
+        .url-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(139, 37, 37, 0.1);
+        }
+
+        .url-input::placeholder {
+            color: #bbb;
+        }
+
+        /* Quality Selection */
+        .quality-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .quality-option {
+            position: relative;
+        }
+
+        .quality-option input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .quality-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 14px 8px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fff;
+        }
+
+        .quality-option label:hover {
+            border-color: var(--accent-light);
+            background: #fdf8f8;
+        }
+
+        .quality-option input:checked + label {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, #fdf2f2, #faf7f0);
+            box-shadow: 0 2px 8px rgba(139, 37, 37, 0.12);
+        }
+
+        .quality-icon {
+            font-size: 1.4rem;
+            margin-bottom: 6px;
+        }
+
+        .quality-name {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .quality-desc {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Download Button */
+        .download-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 0.15em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--accent-light), var(--accent));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(139, 37, 37, 0.25);
+        }
+
+        .download-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            display: none;
+        }
+
+        .progress-section.active {
+            display: block;
+        }
+
+        .video-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .video-info img {
+            width: 120px;
+            height: 68px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .video-info-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .video-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Progress Bar */
+        .progress-bar-container {
+            margin-bottom: 12px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-light));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-bar-fill.completed {
+            background: linear-gradient(90deg, var(--success), #6aad7b);
+        }
+
+        .progress-bar-fill.error {
+            background: var(--error);
+        }
+
+        .progress-bar-fill.indeterminate {
+            width: 30% !important;
+            animation: indeterminate 1.5s ease-in-out infinite;
+        }
+
+        @keyframes indeterminate {
+            0% { margin-left: 0; }
+            50% { margin-left: 70%; }
+            100% { margin-left: 0; }
+        }
+
+        .progress-percent {
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* Log */
+        .log-area {
+            background: #2c2416;
+            border-radius: 8px;
+            padding: 16px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 16px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+        }
+
+        .log-area::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .log-area::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .log-entry {
+            color: #d4c9b5;
+        }
+
+        .log-entry .time {
+            color: #8b7d6b;
+        }
+
+        .log-entry.success {
+            color: #6aad7b;
+        }
+
+        .log-entry.error {
+            color: #c45c5c;
+        }
+
+        .log-entry.info {
+            color: #b8960c;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .status-badge.downloading {
+            background: rgba(184, 150, 12, 0.1);
+            color: var(--gold);
+        }
+
+        .status-badge.processing {
+            background: rgba(139, 37, 37, 0.1);
+            color: var(--accent);
+        }
+
+        .status-badge.completed {
+            background: rgba(74, 124, 89, 0.1);
+            color: var(--success);
+        }
+
+        .status-badge.error {
+            background: rgba(139, 37, 37, 0.1);
+            color: var(--error);
+        }
+
+        .spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid currentColor;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Download Link */
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--success), #3d6b4a);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-top: 12px;
+            transition: all 0.3s;
+            letter-spacing: 0.05em;
+        }
+
+        .download-link:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 124, 89, 0.3);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            position: relative;
+            z-index: 1;
+        }
+
+        footer .dev-name {
+            font-family: 'Noto Serif JP', serif;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        footer::before {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 1px;
+            background: var(--border);
+            margin: 0 auto 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .site-title {
+                font-size: 1.6rem;
+            }
+
+            .quality-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .video-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .video-info img {
+                width: 100%;
+                height: auto;
+                max-width: 200px;
+            }
+
+            .video-title {
+                white-space: normal;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="site-title">YT-Downloader</h1>
+            <p class="site-subtitle">YouTube動画ダウンローダー</p>
+            <div class="divider"></div>
+        </header>
+
+        <div class="card">
+            <h2 class="card-title">動画をダウンロード</h2>
+
+            <div class="input-group">
+                <label for="url-input">YouTube URL</label>
+                <input
+                    type="text"
+                    id="url-input"
+                    class="url-input"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="input-group">
+                <label>画質・形式を選択</label>
+                <div class="quality-grid">
+                    <div class="quality-option">
+                        <input type="radio" name="quality" id="q-4k" value="4k">
+                        <label for="q-4k">
+                            <span class="quality-icon">🎬</span>
+                            <span class="quality-name">4K</span>
+                            <span class="quality-desc">最高画質</span>
+                        </label>
+                    </div>
+                    <div class="quality-option">
+                        <input type="radio" name="quality" id="q-1080" value="1080p" checked>
+                        <label for="q-1080">
+                            <span class="quality-icon">📺</span>
+                            <span class="quality-name">1080p</span>
+                            <span class="quality-desc">フルHD</span>
+                        </label>
+                    </div>
+                    <div class="quality-option">
+                        <input type="radio" name="quality" id="q-720" value="720p">
+                        <label for="q-720">
+                            <span class="quality-icon">📱</span>
+                            <span class="quality-name">720p</span>
+                            <span class="quality-desc">HD</span>
+                        </label>
+                    </div>
+                    <div class="quality-option">
+                        <input type="radio" name="quality" id="q-mp3" value="mp3">
+                        <label for="q-mp3">
+                            <span class="quality-icon">🎵</span>
+                            <span class="quality-name">MP3</span>
+                            <span class="quality-desc">音声のみ</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <button id="download-btn" class="download-btn" onclick="startDownload()">
+                ダウンロード開始
+            </button>
+        </div>
+
+        <!-- Progress Section -->
+        <div id="progress-section" class="card progress-section">
+            <h2 class="card-title">進捗状況</h2>
+
+            <div id="status-badge" class="status-badge downloading">
+                <div class="spinner"></div>
+                <span id="status-text">準備中...</span>
+            </div>
+
+            <div id="video-info" class="video-info" style="display: none;">
+                <img id="video-thumb" src="" alt="">
+                <div class="video-info-text">
+                    <div id="video-title" class="video-title"></div>
+                </div>
+            </div>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar-bg">
+                    <div id="progress-bar" class="progress-bar-fill"></div>
+                </div>
+                <div id="progress-percent" class="progress-percent">0%</div>
+            </div>
+
+            <div id="download-result" style="display: none; text-align: center;"></div>
+
+            <div id="log-area" class="log-area"></div>
+        </div>
+    </div>
+
+    <footer>
+        <span>developed by <span class="dev-name">dontaro</span></span>
+    </footer>
+
+    <script>
+        const socket = io();
+        let currentTaskId = null;
+
+        function getTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('ja-JP', { hour12: false });
+        }
+
+        function addLog(message, type = '') {
+            const logArea = document.getElementById('log-area');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `<span class="time">[${getTime()}]</span> ${message}`;
+            logArea.appendChild(entry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function updateStatus(status, text) {
+            const badge = document.getElementById('status-badge');
+            const statusText = document.getElementById('status-text');
+            badge.className = `status-badge ${status}`;
+
+            if (status === 'completed' || status === 'error') {
+                badge.innerHTML = `<span id="status-text">${text}</span>`;
+            } else {
+                badge.innerHTML = `<div class="spinner"></div><span id="status-text">${text}</span>`;
+            }
+        }
+
+        function startDownload() {
+            const url = document.getElementById('url-input').value.trim();
+            const quality = document.querySelector('input[name="quality"]:checked').value;
+
+            if (!url) {
+                alert('URLを入力してください');
+                return;
+            }
+
+            // Reset UI
+            const btn = document.getElementById('download-btn');
+            btn.disabled = true;
+            btn.textContent = '処理中...';
+
+            const progressSection = document.getElementById('progress-section');
+            progressSection.classList.add('active');
+
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.style.width = '0%';
+            progressBar.className = 'progress-bar-fill indeterminate';
+            document.getElementById('progress-percent').textContent = '0%';
+
+            document.getElementById('video-info').style.display = 'none';
+            document.getElementById('download-result').style.display = 'none';
+            document.getElementById('log-area').innerHTML = '';
+
+            updateStatus('downloading', '準備中...');
+            addLog('ダウンロードリクエストを送信中...', 'info');
+
+            const qualityLabels = {
+                '4k': '4K (2160p)',
+                '1080p': 'フルHD (1080p)',
+                '720p': 'HD (720p)',
+                'mp3': 'MP3 (320kbps)'
+            };
+            addLog(`選択形式: ${qualityLabels[quality]}`);
+
+            fetch('/api/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url, quality }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    addLog(data.error, 'error');
+                    updateStatus('error', 'エラー');
+                    progressBar.className = 'progress-bar-fill error';
+                    progressBar.style.width = '100%';
+                    btn.disabled = false;
+                    btn.textContent = 'ダウンロード開始';
+                    return;
+                }
+                currentTaskId = data.task_id;
+                addLog(`タスクID: ${data.task_id} - サーバーに接続しました`, 'success');
+            })
+            .catch(err => {
+                addLog(`接続エラー: ${err.message}`, 'error');
+                updateStatus('error', 'エラー');
+                btn.disabled = false;
+                btn.textContent = 'ダウンロード開始';
+            });
+        }
+
+        socket.on('progress', function(data) {
+            if (data.task_id !== currentTaskId) return;
+
+            const progressBar = document.getElementById('progress-bar');
+            const progressPercent = document.getElementById('progress-percent');
+
+            switch (data.status) {
+                case 'starting':
+                case 'extracting':
+                    updateStatus('downloading', data.detail);
+                    addLog(data.detail, 'info');
+                    break;
+
+                case 'info':
+                    updateStatus('downloading', 'ダウンロード準備完了');
+                    addLog(data.detail, 'success');
+
+                    if (data.title) {
+                        document.getElementById('video-title').textContent = data.title;
+                        if (data.thumbnail) {
+                            document.getElementById('video-thumb').src = data.thumbnail;
+                        }
+                        document.getElementById('video-info').style.display = 'flex';
+                    }
+                    break;
+
+                case 'downloading':
+                    progressBar.className = 'progress-bar-fill';
+                    progressBar.style.width = data.percent + '%';
+                    progressPercent.textContent = Math.round(data.percent) + '%';
+                    updateStatus('downloading', data.detail);
+
+                    // Log every ~10%
+                    if (Math.round(data.percent) % 10 === 0) {
+                        addLog(data.detail);
+                    }
+                    break;
+
+                case 'processing':
+                    progressBar.className = 'progress-bar-fill indeterminate';
+                    progressBar.style.width = '100%';
+                    progressPercent.textContent = '変換中...';
+                    updateStatus('processing', data.detail);
+                    addLog(data.detail, 'info');
+                    break;
+
+                case 'completed':
+                    progressBar.className = 'progress-bar-fill completed';
+                    progressBar.style.width = '100%';
+                    progressPercent.textContent = '100%';
+                    updateStatus('completed', 'ダウンロード完了');
+                    addLog('ダウンロードが正常に完了しました！', 'success');
+
+                    const resultDiv = document.getElementById('download-result');
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `<a href="/api/file/${encodeURIComponent(data.filename)}" class="download-link">ファイルを保存</a>`;
+
+                    document.getElementById('download-btn').disabled = false;
+                    document.getElementById('download-btn').textContent = 'ダウンロード開始';
+                    break;
+
+                case 'error':
+                    progressBar.className = 'progress-bar-fill error';
+                    progressBar.style.width = '100%';
+                    progressPercent.textContent = 'エラー';
+                    updateStatus('error', 'エラーが発生しました');
+                    addLog(data.detail, 'error');
+
+                    document.getElementById('download-btn').disabled = false;
+                    document.getElementById('download-btn').textContent = 'ダウンロード開始';
+                    break;
+            }
+        });
+
+        // Enter key to submit
+        document.getElementById('url-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') startDownload();
+        });
+    </script>
+</body>
+</html>

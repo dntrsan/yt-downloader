@@ -177,7 +177,7 @@ def do_download(task_id, url, quality):
     except Exception as e:
         error_msg = str(e)
         if "is not a valid URL" in error_msg:
-            error_msg = "無効なURLです。正しいYouTubeのURLを入力してください。"
+            error_msg = "無効なURLです。正しいURLを入力してください。"
         elif "Video unavailable" in error_msg:
             error_msg = "この動画は利用できません。"
         elif "Private video" in error_msg:
@@ -204,9 +204,9 @@ def start_download():
     if not url:
         return jsonify({"error": "URLを入力してください"}), 400
 
-    youtube_pattern = r"(https?://)?(www\.)?(youtube\.com|youtu\.be)/.+"
-    if not re.match(youtube_pattern, url):
-        return jsonify({"error": "有効なYouTubeのURLを入力してください"}), 400
+    supported_pattern = r"(https?://)?(www\.|vm\.|vt\.)?(youtube\.com|youtu\.be|tiktok\.com)/.+"
+    if not re.match(supported_pattern, url):
+        return jsonify({"error": "有効なYouTubeまたはTikTokのURLを入力してください"}), 400
 
     task_id = str(uuid.uuid4())[:8]
     thread = threading.Thread(target=do_download, args=(task_id, url, quality), daemon=True)

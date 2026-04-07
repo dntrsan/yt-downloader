@@ -61,6 +61,6 @@ python app.py
 3. 「ダウンロード開始」をクリック
 4. 完了後「ファイルを保存」からダウンロード
 
-## developed by dontaro
+作成: どんたろぬす
 
-*This README was written by claudeくん*
+先生およびREADME: claude先生

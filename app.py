@@ -11,6 +11,12 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "yt-downloader-secret"
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+@app.after_request
+def remove_server_header(response):
+    response.headers["Server"] = "Server"
+    response.headers.pop("X-Powered-By", None)
+    return response
+
 DOWNLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 

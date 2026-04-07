@@ -8,19 +8,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
     <style>
         :root {
-            --bg-primary: #f5f0e8;
-            --bg-secondary: #ece5d5;
-            --bg-card: #faf7f0;
-            --text-primary: #2c2416;
-            --text-secondary: #6b5d4d;
-            --accent: #8b2525;
-            --accent-light: #c45c5c;
-            --accent-dark: #5e1414;
-            --border: #d4c9b5;
-            --border-light: #e8dece;
-            --success: #4a7c59;
-            --error: #8b2525;
-            --gold: #b8960c;
+            --bg-primary: #eef5ee;
+            --bg-secondary: #e2ede2;
+            --bg-card: #f7fbf7;
+            --text-primary: #2a3a2a;
+            --text-secondary: #5e7a5e;
+            --accent: #6aab6a;
+            --accent-light: #8ec78e;
+            --accent-dark: #4a8a4a;
+            --border: #c2d8c2;
+            --border-light: #d8ead8;
+            --success: #5a9a5a;
+            --error: #c06060;
+            --gold: #8aad6a;
         }
 
         * {
@@ -47,9 +47,9 @@
             width: 100%;
             height: 100%;
             background-image:
-                radial-gradient(circle at 20% 50%, rgba(139, 37, 37, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(184, 150, 12, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 50% 80%, rgba(74, 124, 89, 0.03) 0%, transparent 50%);
+                radial-gradient(circle at 20% 50%, rgba(106, 171, 106, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(142, 199, 142, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(74, 138, 74, 0.04) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
         }
@@ -120,7 +120,7 @@
             border-radius: 8px;
             padding: 32px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 12px rgba(44, 36, 22, 0.06);
+            box-shadow: 0 2px 12px rgba(42, 58, 42, 0.06);
         }
 
         .card-title {
@@ -161,7 +161,7 @@
 
         .url-input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(139, 37, 37, 0.1);
+            box-shadow: 0 0 0 3px rgba(106, 171, 106, 0.15);
         }
 
         .url-input::placeholder {
@@ -200,13 +200,13 @@
 
         .quality-option label:hover {
             border-color: var(--accent-light);
-            background: #fdf8f8;
+            background: #f0f8f0;
         }
 
         .quality-option input:checked + label {
             border-color: var(--accent);
-            background: linear-gradient(135deg, #fdf2f2, #faf7f0);
-            box-shadow: 0 2px 8px rgba(139, 37, 37, 0.12);
+            background: linear-gradient(135deg, #eaf5ea, #f0f8f0);
+            box-shadow: 0 2px 8px rgba(106, 171, 106, 0.15);
         }
 
         .quality-icon {
@@ -247,7 +247,7 @@
         .download-btn:hover:not(:disabled) {
             background: linear-gradient(135deg, var(--accent-light), var(--accent));
             transform: translateY(-1px);
-            box-shadow: 0 4px 16px rgba(139, 37, 37, 0.25);
+            box-shadow: 0 4px 16px rgba(106, 171, 106, 0.3);
         }
 
         .download-btn:active:not(:disabled) {
@@ -349,7 +349,7 @@
 
         /* Log */
         .log-area {
-            background: #2c2416;
+            background: #1e2e1e;
             border-radius: 8px;
             padding: 16px;
             max-height: 200px;
@@ -370,23 +370,23 @@
         }
 
         .log-entry {
-            color: #d4c9b5;
+            color: #c2d8c2;
         }
 
         .log-entry .time {
-            color: #8b7d6b;
+            color: #7a9a7a;
         }
 
         .log-entry.success {
-            color: #6aad7b;
+            color: #8ec78e;
         }
 
         .log-entry.error {
-            color: #c45c5c;
+            color: #d08080;
         }
 
         .log-entry.info {
-            color: #b8960c;
+            color: #a8cc88;
         }
 
         /* Status Badge */
@@ -402,12 +402,12 @@
         }
 
         .status-badge.downloading {
-            background: rgba(184, 150, 12, 0.1);
-            color: var(--gold);
+            background: rgba(106, 171, 106, 0.1);
+            color: var(--accent-dark);
         }
 
         .status-badge.processing {
-            background: rgba(139, 37, 37, 0.1);
+            background: rgba(106, 171, 106, 0.1);
             color: var(--accent);
         }
 
@@ -417,7 +417,7 @@
         }
 
         .status-badge.error {
-            background: rgba(139, 37, 37, 0.1);
+            background: rgba(192, 96, 96, 0.1);
             color: var(--error);
         }
 
@@ -440,7 +440,7 @@
             align-items: center;
             gap: 8px;
             padding: 12px 24px;
-            background: linear-gradient(135deg, var(--success), #3d6b4a);
+            background: linear-gradient(135deg, var(--success), #4a8a4a);
             color: #fff;
             text-decoration: none;
             border-radius: 8px;
@@ -453,7 +453,7 @@
 
         .download-link:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(74, 124, 89, 0.3);
+            box-shadow: 0 4px 12px rgba(90, 154, 90, 0.3);
         }
 
         /* Footer */

@@ -204,9 +204,8 @@ def start_download():
     if not url:
         return jsonify({"error": "URLを入力してください"}), 400
 
-    supported_pattern = r"(https?://)?(www\.|vm\.|vt\.)?(youtube\.com|youtu\.be|tiktok\.com)/.+"
-    if not re.match(supported_pattern, url):
-        return jsonify({"error": "有効なYouTubeまたはTikTokのURLを入力してください"}), 400
+    if not re.match(r"https?://.+", url):
+        return jsonify({"error": "有効なURLを入力してください"}), 400
 
     task_id = str(uuid.uuid4())[:8]
     thread = threading.Thread(target=do_download, args=(task_id, url, quality), daemon=True)

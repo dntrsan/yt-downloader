@@ -1,13 +1,11 @@
 # YT-Downloader
 
-YouTube動画をダウンロードできるWebアプリケーションです。
+YouTube動画を**広告無し**でダウンロードできる(有能)Webアプリケーションです。
 
 ## 機能
 
-- YouTube動画のダウンロード（4K / 1080p / 720p）
+- YouTube動画のダウンロード（4K(!?) / 1080p / 720p）
 - MP3形式での音声抽出（320kbps）
-- リアルタイム進捗表示
-- 和風デザイン
 
 ## 必要なもの
 
@@ -35,11 +33,6 @@ winget install Gyan.FFmpeg
 brew install ffmpeg
 ```
 
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt install ffmpeg
-```
-
 ### 3. Pythonパッケージのインストール
 
 ```bash
@@ -60,6 +53,7 @@ python app.py
 2. 画質・形式を選択（4K / 1080p / 720p / MP3）
 3. 「ダウンロード開始」をクリック
 4. 完了後「ファイルを保存」からダウンロード
+5. うれしい
 
 作成: どんたろぬす
 

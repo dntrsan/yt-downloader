@@ -2,4 +2,3 @@ flask
 flask-socketio
 yt-dlp
 gunicorn
-eventlet

@@ -1,4 +1,4 @@
-# YT-downloader v1.2
+# YT-downloader v1.3
 
 YouTube動画を**広告無し**でダウンロードできる(有能)Webアプリケーションです。
 

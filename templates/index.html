@@ -4,23 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YT-downloader v1.2</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
     <style>
         :root {
-            --bg-primary: #eef5ee;
-            --bg-secondary: #e2ede2;
-            --bg-card: #f7fbf7;
-            --text-primary: #2a3a2a;
-            --text-secondary: #5e7a5e;
-            --accent: #6aab6a;
-            --accent-light: #8ec78e;
-            --accent-dark: #4a8a4a;
-            --border: #c2d8c2;
-            --border-light: #d8ead8;
-            --success: #5a9a5a;
-            --error: #c06060;
-            --gold: #8aad6a;
+            --bg-primary: #f5f7fb;
+            --bg-secondary: #eef2f7;
+            --bg-card: #ffffff;
+            --text-primary: #172033;
+            --text-secondary: #65728a;
+            --accent: #2563eb;
+            --accent-light: #60a5fa;
+            --accent-dark: #1d4ed8;
+            --border: #cfd8e6;
+            --border-light: #e6ebf3;
+            --success: #0f9f6e;
+            --error: #d64545;
+            --gold: #f59e0b;
+            --shadow: 0 18px 48px rgba(23, 32, 51, 0.12);
         }
 
         * {
@@ -30,8 +31,9 @@
         }
 
         body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background-color: var(--bg-primary);
+            font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
+            background:
+                linear-gradient(180deg, #eef4ff 0%, var(--bg-primary) 42%, #f8fafc 100%);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
@@ -47,9 +49,10 @@
             width: 100%;
             height: 100%;
             background-image:
-                radial-gradient(circle at 20% 50%, rgba(106, 171, 106, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(142, 199, 142, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 50% 80%, rgba(74, 138, 74, 0.04) 0%, transparent 50%);
+                linear-gradient(rgba(37, 99, 235, 0.055) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(37, 99, 235, 0.055) 1px, transparent 1px);
+            background-size: 44px 44px;
+            mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent 76%);
             pointer-events: none;
             z-index: 0;
         }
@@ -67,28 +70,30 @@
         /* Header */
         header {
             text-align: center;
-            padding: 40px 0 30px;
+            padding: 42px 0 28px;
         }
 
         .site-title {
-            font-family: 'Noto Serif JP', serif;
-            font-size: 2.2rem;
+            font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 2.35rem;
             font-weight: 700;
-            color: var(--accent);
-            letter-spacing: 0.1em;
+            color: var(--text-primary);
+            letter-spacing: 0;
             position: relative;
             display: inline-block;
         }
 
         .site-title::before,
         .site-title::after {
-            content: '〇';
-            font-size: 0.5em;
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--gold);
-            opacity: 0.5;
+            background: var(--gold);
+            opacity: 0.85;
         }
 
         .site-title::before {
@@ -102,15 +107,17 @@
         .site-subtitle {
             font-size: 0.85rem;
             color: var(--text-secondary);
-            margin-top: 8px;
-            letter-spacing: 0.2em;
+            margin-top: 10px;
+            letter-spacing: 0;
+            font-weight: 500;
         }
 
         .divider {
-            width: 60px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            margin: 20px auto;
+            width: 84px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--gold));
+            border-radius: 999px;
+            margin: 18px auto 0;
         }
 
         /* Main Card */
@@ -120,17 +127,17 @@
             border-radius: 8px;
             padding: 32px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 12px rgba(42, 58, 42, 0.06);
+            box-shadow: var(--shadow);
         }
 
         .card-title {
-            font-family: 'Noto Serif JP', serif;
+            font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
             font-size: 1rem;
-            color: var(--text-secondary);
+            color: var(--text-primary);
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 1px solid var(--border-light);
-            letter-spacing: 0.1em;
+            letter-spacing: 0;
         }
 
         /* URL Input */
@@ -152,8 +159,8 @@
             border: 1px solid var(--border);
             border-radius: 6px;
             font-size: 0.95rem;
-            font-family: 'Noto Sans JP', sans-serif;
-            background: #fff;
+            font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #fbfdff;
             color: var(--text-primary);
             transition: border-color 0.3s, box-shadow 0.3s;
             outline: none;
@@ -161,11 +168,11 @@
 
         .url-input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(106, 171, 106, 0.15);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
         }
 
         .url-input::placeholder {
-            color: #bbb;
+            color: #9aa7bb;
         }
 
         /* Quality Selection */
@@ -191,22 +198,23 @@
             flex-direction: column;
             align-items: center;
             padding: 14px 8px;
-            border: 2px solid var(--border);
+            border: 1px solid var(--border);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
-            background: #fff;
+            background: #fbfdff;
+            min-height: 94px;
         }
 
         .quality-option label:hover {
             border-color: var(--accent-light);
-            background: #f0f8f0;
+            background: #f4f8ff;
         }
 
         .quality-option input:checked + label {
             border-color: var(--accent);
-            background: linear-gradient(135deg, #eaf5ea, #f0f8f0);
-            box-shadow: 0 2px 8px rgba(106, 171, 106, 0.15);
+            background: linear-gradient(180deg, #eff6ff, #ffffff);
+            box-shadow: 0 8px 22px rgba(37, 99, 235, 0.14);
         }
 
         .quality-icon {
@@ -235,11 +243,11 @@
             border: none;
             border-radius: 8px;
             font-size: 1rem;
-            font-family: 'Noto Sans JP', sans-serif;
+            font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
-            letter-spacing: 0.15em;
+            letter-spacing: 0;
             position: relative;
             overflow: hidden;
         }
@@ -247,7 +255,7 @@
         .download-btn:hover:not(:disabled) {
             background: linear-gradient(135deg, var(--accent-light), var(--accent));
             transform: translateY(-1px);
-            box-shadow: 0 4px 16px rgba(106, 171, 106, 0.3);
+            box-shadow: 0 12px 28px rgba(37, 99, 235, 0.28);
         }
 
         .download-btn:active:not(:disabled) {
@@ -276,6 +284,7 @@
             padding: 12px;
             background: var(--bg-secondary);
             border-radius: 8px;
+            border: 1px solid var(--border-light);
         }
 
         .video-info img {
@@ -306,8 +315,8 @@
 
         .progress-bar-bg {
             width: 100%;
-            height: 8px;
-            background: var(--bg-secondary);
+            height: 10px;
+            background: #dfe7f3;
             border-radius: 4px;
             overflow: hidden;
         }
@@ -349,7 +358,7 @@
 
         /* Log */
         .log-area {
-            background: #1e2e1e;
+            background: #111827;
             border-radius: 8px;
             padding: 16px;
             max-height: 200px;
@@ -370,23 +379,23 @@
         }
 
         .log-entry {
-            color: #c2d8c2;
+            color: #d8e2f1;
         }
 
         .log-entry .time {
-            color: #7a9a7a;
+            color: #8aa0bf;
         }
 
         .log-entry.success {
-            color: #8ec78e;
+            color: #64d6a8;
         }
 
         .log-entry.error {
-            color: #d08080;
+            color: #ff8f8f;
         }
 
         .log-entry.info {
-            color: #a8cc88;
+            color: #93c5fd;
         }
 
         /* Status Badge */
@@ -394,7 +403,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 4px 12px;
+            padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 500;
@@ -402,12 +411,12 @@
         }
 
         .status-badge.downloading {
-            background: rgba(106, 171, 106, 0.1);
+            background: rgba(37, 99, 235, 0.1);
             color: var(--accent-dark);
         }
 
         .status-badge.processing {
-            background: rgba(106, 171, 106, 0.1);
+            background: rgba(245, 158, 11, 0.12);
             color: var(--accent);
         }
 
@@ -448,7 +457,7 @@
             font-size: 0.95rem;
             margin-top: 12px;
             transition: all 0.3s;
-            letter-spacing: 0.05em;
+            letter-spacing: 0;
         }
 
         .download-link:hover {
@@ -462,13 +471,13 @@
             padding: 30px 20px;
             color: var(--text-secondary);
             font-size: 0.8rem;
-            letter-spacing: 0.1em;
+            letter-spacing: 0;
             position: relative;
             z-index: 1;
         }
 
         footer .dev-name {
-            font-family: 'Noto Serif JP', serif;
+            font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 700;
             color: var(--accent);
         }
@@ -493,7 +502,7 @@
             }
 
             .site-title {
-                font-size: 1.6rem;
+                font-size: 1.75rem;
             }
 
             .quality-grid {
@@ -521,7 +530,7 @@
     <div class="container">
         <header>
             <h1 class="site-title">YT-downloader v1.2</h1>
-            <p class="site-subtitle">YouTube / TikTok ダウンローダー</p>
+            <p class="site-subtitle">YouTube / TikTok / X ダウンローダー</p>
             <div class="divider"></div>
         </header>
 
@@ -529,12 +538,12 @@
             <h2 class="card-title">動画をダウンロード</h2>
 
             <div class="input-group">
-                <label for="url-input">YouTube URL</label>
+                <label for="url-input">動画 URL</label>
                 <input
                     type="text"
                     id="url-input"
                     class="url-input"
-                    placeholder="YouTube / TikTok のURLを入力..."
+                    placeholder="YouTube / TikTok / X のURLを入力..."
                     autocomplete="off"
                 >
             </div>

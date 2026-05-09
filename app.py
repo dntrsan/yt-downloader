@@ -17,13 +17,50 @@ def remove_server_header(response):
     response.headers.pop("X-Powered-By", None)
     return response
 
-DOWNLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloads")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DOWNLOAD_DIR = os.path.join(BASE_DIR, "downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 FFMPEG_PATH = shutil.which("ffmpeg")
 FFMPEG_DIR = os.path.dirname(FFMPEG_PATH) if FFMPEG_PATH else None
+DEFAULT_COOKIE_FILE = os.path.join(BASE_DIR, "cookies.txt")
 
 downloads = {}
+
+
+def get_cookie_source():
+    cookie_file = os.environ.get("YTDLP_COOKIEFILE", DEFAULT_COOKIE_FILE)
+    if not cookie_file or not os.path.exists(cookie_file):
+        return None
+
+    with open(cookie_file, "r", encoding="utf-8", errors="ignore") as f:
+        cookie_text = f.read().strip()
+
+    if not cookie_text:
+        return None
+
+    if cookie_text.startswith("# Netscape HTTP Cookie File") or "\t" in cookie_text:
+        return {"type": "file", "value": cookie_file}
+
+    raw_cookie = cookie_text
+    if raw_cookie.lower().startswith("cookie:"):
+        raw_cookie = raw_cookie.split(":", 1)[1].strip()
+
+    raw_cookie = " ".join(line.strip() for line in raw_cookie.splitlines() if line.strip())
+    if not raw_cookie:
+        return None
+
+    cookie_pairs = {}
+    for part in raw_cookie.split(";"):
+        if "=" in part:
+            name, value = part.strip().split("=", 1)
+            cookie_pairs[name] = value
+
+    return {
+        "type": "header",
+        "value": raw_cookie,
+        "ct0": cookie_pairs.get("ct0"),
+    }
 
 
 class ProgressHook:
@@ -106,6 +143,18 @@ def do_download(task_id, url, quality):
             "postprocessor_hooks": [postprocessor_hook(task_id)],
             "noplaylist": True,
         }
+        cookie_source = get_cookie_source()
+        if cookie_source:
+            if cookie_source["type"] == "file":
+                common_opts["cookiefile"] = cookie_source["value"]
+            else:
+                headers = {
+                    "Cookie": cookie_source["value"],
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+                }
+                if cookie_source.get("ct0"):
+                    headers["x-csrf-token"] = cookie_source["ct0"]
+                common_opts["http_headers"] = headers
         if FFMPEG_DIR:
             common_opts["ffmpeg_location"] = FFMPEG_DIR
 
@@ -188,6 +237,10 @@ def do_download(task_id, url, quality):
             error_msg = "この動画は利用できません。"
         elif "Private video" in error_msg:
             error_msg = "非公開動画のためダウンロードできません。"
+        elif "No video could be found in this tweet" in error_msg or "Some metadata is missing without authentication" in error_msg:
+            error_msg = "Xの動画情報を取得できませんでした。Xはログイン状態のCookieが必要な場合があります。cookies.txtを配置するか、YTDLP_COOKIEFILEでCookieファイルを指定してください。"
+        elif "Unsupported URL" in error_msg and ("x.com" in url or "twitter.com" in url):
+            error_msg = "このXのURL形式にyt-dlpが対応できませんでした。投稿詳細ページのURLを使い、yt-dlpを最新版へ更新してください。"
 
         socketio.emit("progress", {
             "task_id": task_id,

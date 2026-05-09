@@ -101,4 +101,4 @@ python -m yt_dlp --cookies cookies.txt "https://x.com/ユーザー名/status/投
 
 作成: どんたろぬす
 
-先生およびREADME: claude先生
+先生およびREADME: Claude Opus4.7・GPT-5.5
